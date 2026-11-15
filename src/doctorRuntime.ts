@@ -6,6 +6,7 @@ import {
   type DoctorProviderInspection,
 } from "./application/Doctor.js";
 import { fileURLToPath } from "node:url";
+import { inspectJebRegistration } from "./application/jeb/JebRegistrationInspection.js";
 import { readDesktopBuildFacts } from "./desktop/DesktopBuildDoctorFacts.js";
 import {
   JADX_DOCTOR_SETTINGS,
@@ -368,6 +369,7 @@ export const createSystemDoctorHost = (
         platform,
       );
       return [
+        inspectJebRegistration(environment),
         unresolvedProvider(
           "ghidra",
           selected,
