@@ -279,7 +279,6 @@
     "src/adb/AdbConfiguration.ts": 1,
     "src/adb/AdbDeviceOutput.ts": 1,
     "src/adb/AdbHostFileName.ts": 1,
-    "src/adb/AdbProvider.ts": 1,
     "src/android/JadxConfiguration.ts": 10,
     "src/android/JadxWorkspaceRoot.ts": 1,
     "src/apktool/ApktoolConfiguration.ts": 4,

@@ -4,7 +4,10 @@ import {
 } from "./jsonSchemaReferences.js";
 import { isDeepStrictEqual } from "node:util";
 
-import { advertisedSchemaPatterns } from "./advertisedDialect.js";
+import {
+  advertisedSchemaPatterns,
+  ADVERTISED_BOUND_LIMIT,
+} from "./advertisedDialect.js";
 import { dependencyGuidance } from "./advertisedDialectProjection.js";
 import { projectPortablePattern } from "./portablePattern.js";
 import {
@@ -313,9 +316,17 @@ const hasWidenedPattern = (schema: Readonly<Record<string, unknown>>) =>
 interface NormalizationOptions {
   /** Rewrite boolean and empty-string literals some gateways refuse. */
   readonly literals: boolean;
+  /** Opt-in constraints beyond the shared portable-pattern projection. */
+  readonly portableInput?: boolean;
 }
 const INPUT_NORMALIZATION: NormalizationOptions = { literals: true };
 const OUTPUT_NORMALIZATION: NormalizationOptions = { literals: false };
+const hasPortableInputConstraint = (
+  schema: Readonly<Record<string, unknown>>,
+) =>
+  typeof schema.format === "string" ||
+  (typeof schema.maxLength === "number" &&
+    schema.maxLength >= ADVERTISED_BOUND_LIMIT);
 
 /** One projection owns actual rewrite sites and their scoped validation dependencies. */
 /**
@@ -466,6 +477,8 @@ const normalizationContext = (
       (opaquePatternChanged ||
         (sites.get(scope)?.has(schema) &&
           ((options.literals && hasNormalizedLiteral(schema)) ||
+            (options.portableInput === true &&
+              hasPortableInputConstraint(schema)) ||
             hasWidenedPattern(schema))))
     ) {
       fact.changed = true;
@@ -626,6 +639,14 @@ const normalizeAdvertisedSchema = (
   const normalize = (child: unknown) =>
     normalizeAdvertisedSchema(child, options, owner, scope);
   const node: Record<string, unknown> = { ...value };
+  if (options.portableInput === true) {
+    if (typeof node.format === "string") delete node.format;
+    if (
+      typeof node.maxLength === "number" &&
+      node.maxLength >= ADVERTISED_BOUND_LIMIT
+    )
+      delete node.maxLength;
+  }
   const changed = owner.changed(value, scope);
   const normalizeMap = (map: Readonly<Record<string, unknown>>) =>
     Object.fromEntries(
@@ -996,10 +1017,35 @@ const presentDiscriminatedRoot = (
   };
 };
 
+const normalizeInputRoot = (
+  root: Record<string, unknown>,
+  portable: boolean,
+): Record<string, unknown> => {
+  const prepared = portable
+    ? (omitNestedDefaults(root, referencedDefaultPaths(root)) as Record<
+        string,
+        unknown
+      >)
+    : root;
+  const normalized = normalizeAdvertisedSchema(prepared, {
+    ...INPUT_NORMALIZATION,
+    portableInput: portable,
+  }).schema as Record<string, unknown>;
+  if (
+    portable &&
+    normalized.$schema === "https://json-schema.org/draft/2020-12/schema"
+  ) {
+    const { $schema: _dialect, ...body } = normalized;
+    return body;
+  }
+  return normalized;
+};
+
 /** Describe canonical input fields and present the root as one object. */
 export const presentInputJsonSchema = (
   root: Record<string, unknown>,
   describeProperty: (property: string) => string | undefined,
+  { portableDialect = false }: { readonly portableDialect?: boolean } = {},
 ): Record<string, unknown> => {
   const flattened = presentDiscriminatedRoot(root);
   const references = new JsonSchemaReferences(flattened);
@@ -1010,8 +1056,7 @@ export const presentInputJsonSchema = (
     describeProperty,
   );
   if (!isObject(described))
-    return normalizeAdvertisedSchema(flattened, INPUT_NORMALIZATION)
-      .schema as Record<string, unknown>;
+    return normalizeInputRoot(flattened, portableDialect);
   const {
     dependencies: _dependencies,
     dependentRequired: _dependentRequired,
@@ -1019,18 +1064,17 @@ export const presentInputJsonSchema = (
   } = described;
   const dependencies = dependencyGuidance(described);
   if (dependencies.length === 0)
-    return normalizeAdvertisedSchema(presentation, INPUT_NORMALIZATION)
-      .schema as Record<string, unknown>;
+    return normalizeInputRoot(presentation, portableDialect);
   const description = [
     typeof presentation.description === "string"
       ? presentation.description
       : undefined,
     ...dependencies,
   ].filter((text) => text !== undefined);
-  return normalizeAdvertisedSchema(
+  return normalizeInputRoot(
     { ...presentation, description: description.join(" ") },
-    INPUT_NORMALIZATION,
-  ).schema as Record<string, unknown>;
+    portableDialect,
+  );
 };
 
 /**

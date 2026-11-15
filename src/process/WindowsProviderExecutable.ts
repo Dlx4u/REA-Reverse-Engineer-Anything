@@ -4,7 +4,7 @@ import { err, ok, type Result } from "../domain/result.js";
 import {
   windowsPathCandidates,
   type WindowsPathSearchFailure,
-} from "../process/executableSearch.js";
+} from "./executableSearch.js";
 
 export interface WindowsExecutableLookup {
   /** Windows-formatted working directory; defaults to the process CWD. */
