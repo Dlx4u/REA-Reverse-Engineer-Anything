@@ -41,7 +41,7 @@ const launch = async (
     environment: {},
     platform: "linux",
     analyzeHeadlessPath: join(root, "support", "analyzeHeadless"),
-    configurationDirectoryName: "ghidra_12.1.4_PUBLIC",
+    configurationDirectoryName: "ghidra_12.2_PUBLIC",
     javaHome: join(root, "jdk"),
     bridgeScriptPath: join(root, "bridge.java"),
     javaLaunch,
@@ -136,7 +136,7 @@ it("wraps an opaque typed caller reason at the real spawn preparation checkpoint
     environment: {},
     platform: process.platform,
     analyzeHeadlessPath: join(root, "support", "analyzeHeadless"),
-    configurationDirectoryName: "ghidra_12.1.4_PUBLIC",
+    configurationDirectoryName: "ghidra_12.2_PUBLIC",
     javaHome: join(root, "jdk"),
     bridgeScriptPath: join(root, "bridge.java"),
     javaLaunch: async () => {

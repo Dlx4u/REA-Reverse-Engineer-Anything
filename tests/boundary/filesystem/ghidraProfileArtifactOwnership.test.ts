@@ -468,7 +468,7 @@ it.each(["seed", "extension"] as const)(
     const launcher = new GhidraHeadlessLauncher({
       environment: {},
       analyzeHeadlessPath: join(root, "support/analyzeHeadless"),
-      configurationDirectoryName: "ghidra_12.1.4_PUBLIC",
+      configurationDirectoryName: "ghidra_12.2_PUBLIC",
       bridgeScriptPath: "/packaged/ReaGhidraBridge.java",
       ...(seeds.value === undefined ? {} : { analysisSeeds: seeds.value }),
       analysisExtensions: extensions.value,
@@ -480,7 +480,7 @@ it.each(["seed", "extension"] as const)(
       targetSha256: createHash("sha256")
         .update("synthetic target")
         .digest("hex"),
-      providerVersion: "12.1.4",
+      providerVersion: "12.2",
       profileDigest: "b".repeat(64),
     });
     const controller = new AbortController();
