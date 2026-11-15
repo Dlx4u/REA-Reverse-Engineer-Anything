@@ -72,7 +72,7 @@ process.stdin.on("data", (chunk) => {
     });
     const [clientTransport, serverTransport] =
       InMemoryTransport.createLinkedPair();
-    const callerPath = "./relative/../rizin-fixture.bin";
+    const callerPath = absoluteCallerPath("./relative/../rizin-fixture.bin");
     try {
       await server.connect(serverTransport);
       await client.connect(clientTransport);
