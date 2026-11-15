@@ -29,7 +29,7 @@ export const reportMcpTransportError = (
   const diagnostic =
     error instanceof z.ZodError
       ? { kind: "validation_error", message: MCP_VALIDATION_FAILED }
-      : code === "EPIPE" || code === "ECONNRESET"
+      : code === "EPIPE" || code === "ECONNRESET" || code === "ENOTCONN"
         ? { kind: "connection_lost", message: MCP_CONNECTION_LOST }
         : { kind: "unknown", message: MCP_TRANSPORT_ERROR };
   // Do not echo raw frames or exception text, which can contain caller data.
