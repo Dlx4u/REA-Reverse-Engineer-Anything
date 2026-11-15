@@ -232,7 +232,7 @@ const registerNativeCommands = (
       relativePath: localPathStringSchema
         .optional()
         .describe(
-          "Plist path relative to the app root, or an absolute path (default: the bundle's Info.plist)",
+          "Plist path relative to the opened bundle, or an absolute path inside it (default: the bundle's Info.plist)",
         ),
       nativeCommandTimeoutMs: cliDecimalField(nativeCommandTimeoutField),
     }),

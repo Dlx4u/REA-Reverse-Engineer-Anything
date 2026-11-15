@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { withArtifactTargetIdentity } from "../artifacts/withArtifactTargetIdentity.js";
 import { translateNativeCommandFailure } from "./NativeCommandAnalysisError.js";
 import {
@@ -1134,7 +1135,7 @@ class NativeMacOSClient implements AnalysisClient {
       const plist =
         this.bundleResourceRoot === undefined
           ? await resolveNativePlistSelection(this.target, requested)
-          : resolveBundleResourcePlistSelection(
+          : await resolveBundleResourcePlistSelection(
               this.bundleResourceRoot,
               requested,
             );
@@ -1214,6 +1215,7 @@ class NativeMacOSClient implements AnalysisClient {
         parsed: parsed.value,
         format: "binary",
         path: fileInput.selection.path,
+        sourceSha256: plistSourceSha256(source.value),
         resourceRoot: this.bundleResourceRoot,
         provenance: [
           invocation(classified, fileInput.selection.path, "$PLIST"),
@@ -1287,6 +1289,7 @@ class NativeMacOSClient implements AnalysisClient {
         parsed: parsed.value,
         format,
         path: fileInput.selection.path,
+        sourceSha256: plistSourceSha256(source.value),
         resourceRoot: this.bundleResourceRoot,
         provenance,
       }),
@@ -1298,6 +1301,9 @@ class NativeMacOSClient implements AnalysisClient {
     classified: NativeCommandCapture,
     format: z.infer<typeof inspectPlistSchema>["format"],
   ): Promise<Result<NativeObservation, AnalysisError>> {
+    const source = await readNativePlistBytes(fileInput);
+    if (!source.ok) return source;
+    const sourceSha256 = plistSourceSha256(source.value);
     const { path } = fileInput.selection;
     const { signal, timeoutMs } = fileInput;
     const json = await this.#run(
@@ -1349,6 +1355,7 @@ class NativeMacOSClient implements AnalysisClient {
         parsed: parsed.value,
         format,
         path,
+        sourceSha256,
         resourceRoot: this.bundleResourceRoot,
         provenance,
       }),
@@ -2131,19 +2138,25 @@ const invocation = (
   stderr_bytes: capture.stderrBytes,
 });
 
+const plistSourceSha256 = (bytes: Buffer): string =>
+  createHash("sha256").update(bytes).digest("hex");
+
 const nativePlistObservation = (input: {
   readonly parsed: ParsedPlist;
   readonly format: z.infer<typeof inspectPlistSchema>["format"];
   readonly path: string;
+  readonly sourceSha256: string;
   readonly resourceRoot: ResolvedAppBundleResourceRoot | undefined;
   readonly provenance: readonly NativeCommandInvocation[];
 }): NativeObservation => {
-  const { parsed, format, path, resourceRoot, provenance } = input;
+  const { parsed, format, path, sourceSha256, resourceRoot, provenance } =
+    input;
   const result = inspectPlistSchema.parse({
     format,
     value: parsed.value,
     bundle: parsed.bundle,
     source_path: path,
+    source_sha256: sourceSha256,
     ...(resourceRoot === undefined
       ? {}
       : {
