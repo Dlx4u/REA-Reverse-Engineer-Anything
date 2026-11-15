@@ -1,3 +1,4 @@
+import type { NugetNupkgService } from "../application/nuget/NugetNupkgService.js";
 import type { AdbDeviceAnalysisService } from "../application/adb/AdbDeviceAnalysisService.js";
 import type { AnalysisViewRetention } from "../application/analysisView/AnalysisViewService.js";
 import type { ApkSignatureService } from "../application/apkSignature/ApkSignatureService.js";
@@ -409,6 +410,12 @@ const SERVICE_TOOL_BINDINGS = {
       run: (input, options) => service.recover(input, options),
     },
   })) satisfies Bind<JavaScriptRecoveryService>,
+  nugetNupkg: ((service) => ({
+    inspect_nuget_nupkg: {
+      admission: "application",
+      run: (input, options) => service.inspect(input, options),
+    },
+  })) satisfies Bind<NugetNupkgService>,
 } as const;
 
 type ServiceBindings = typeof SERVICE_TOOL_BINDINGS;

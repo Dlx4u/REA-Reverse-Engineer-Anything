@@ -200,6 +200,7 @@ export const createServer = (
     electronFuses,
     releaseExposure,
     pythonPyc,
+    nugetNupkg,
     webNetworkCapture,
     javascriptRecovery,
     artifactResources,
@@ -493,6 +494,7 @@ export const createServer = (
           sqliteDatabase,
           packetCapture,
           signalRecording,
+          nugetNupkg,
         },
         contractTools,
       );
