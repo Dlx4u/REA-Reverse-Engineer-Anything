@@ -18,9 +18,6 @@ import { localPathStringSchema } from "../domain/localPath.js";
 import { absoluteCallerPath } from "../filesystem/callerPath.js";
 import { explicitSensitiveValueOptions } from "./explicitSensitiveArguments.js";
 
-const recordOrdinal =
-  inspectWebNetworkCaptureInputSchema.shape.record_ordinals.unwrap().element;
-
 /** Expose offline historical capture inspection with the same selection contract as MCP. */
 export const registerWebNetworkCaptureCommands = (
   cli: CliInstance,
@@ -53,10 +50,9 @@ export const registerWebNetworkCaptureCommands = (
         .string()
         .optional()
         .describe("Fully qualified message type in the descriptor set"),
-      record: z
-        .array(cliDecimalField(recordOrdinal))
-        .optional()
-        .describe("Zero-based producer ordinals; repeat to select several"),
+      record: cliDecimalField(
+        inspectWebNetworkCaptureInputSchema.shape.record_ordinals,
+      ).describe("Zero-based producer ordinals; repeat to select several"),
       ...explicitSensitiveValueOptions,
       maxInputBytes: cliDecimalField(
         inspectWebNetworkCaptureInputSchema.shape.max_input_bytes,
