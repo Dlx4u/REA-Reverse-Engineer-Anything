@@ -703,7 +703,7 @@ cliTest(
     const root = await createTestTempDirectory("rea-evidence-discovery-cli-");
     const parent = createEvidence(
       { path: "/fixtures/native.exe", format: "pe", sha256: "a".repeat(64) },
-      { id: "ghidra", name: "Ghidra", version: "12.1.4" },
+      { id: "ghidra", name: "Ghidra", version: "12.2" },
       {
         operation: "analyze_function",
         parameters: {},
@@ -1008,7 +1008,7 @@ cliTest(
     const root = await createTestTempDirectory("rea-native-view-cli-");
     const parent = createEvidence(
       { path: "/fixtures/native.exe", format: "pe", sha256: "a".repeat(64) },
-      { id: "ghidra", name: "Ghidra", version: "12.1.4" },
+      { id: "ghidra", name: "Ghidra", version: "12.2" },
       {
         operation: "analyze_function",
         parameters: { address: "0x401000" },

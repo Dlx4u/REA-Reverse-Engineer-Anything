@@ -56,7 +56,7 @@ const connect = async (
       return ok({
         result: observed,
         rawResult: null,
-        provider: { id: "ghidra", name: "Ghidra", version: "12.1.4" },
+        provider: { id: "ghidra", name: "Ghidra", version: "12.2" },
         limitations: [],
         locations: [],
         sourceEvidence: sources,
@@ -111,7 +111,7 @@ it.each(["analyze_function", "decompile_all"] as const)(
   async (operation) => {
     const source = createEvidence(
       undefined,
-      { id: "ghidra", name: "Ghidra", version: "12.1.4" },
+      { id: "ghidra", name: "Ghidra", version: "12.2" },
       {
         operation: "health",
         parameters: { facet: "historical-report" },

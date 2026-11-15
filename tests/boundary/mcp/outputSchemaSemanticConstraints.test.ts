@@ -219,7 +219,7 @@ mcpTest(
     const evidence = (result: JsonValue) =>
       createEvidence(
         undefined,
-        { id: "ghidra", name: "Controlled bridge result", version: "12.1.4" },
+        { id: "ghidra", name: "Controlled bridge result", version: "12.2" },
         { operation: contract.name, parameters: {}, result },
       );
     let reply = evidence(image);
