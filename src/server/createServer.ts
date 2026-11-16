@@ -196,6 +196,7 @@ export const createServer = (
     electronFuses,
     releaseExposure,
     pythonPyc,
+    elfDependencies,
     webNetworkCapture,
     javascriptRecovery,
     artifactResources,
@@ -405,6 +406,7 @@ export const createServer = (
           peImports,
           windowsShortcut,
           recordedCrash,
+          elfDependencies,
         },
         contractTools,
       );
