@@ -2,6 +2,7 @@ import { expect, it } from "vitest";
 
 import { expandToolAvailability } from "../../../src/contracts/toolOutputSchemaPrimitives.js";
 import { sessionOutputSchemas } from "../../../src/contracts/toolOutputSchemaGroups.js";
+import { absoluteCallerPath } from "../../../src/filesystem/callerPath.js";
 import { createApplicationMcpHarness } from "../../fixtures/applicationMcpHarness.js";
 import { createTestBinarySession } from "../../fixtures/binarySession.js";
 import { parseMcpToolError } from "../../fixtures/mcpToolError.js";
@@ -45,7 +46,7 @@ it("reports debugger start host restrictions without requiring an analysis targe
       ["start_gdb_session", {}],
       [
         "start_rizin_debug_session",
-        { path: "./absent.bin", inferior_tty: "/dev/null" },
+        { path: absoluteCallerPath("./absent.bin"), inferior_tty: "/dev/null" },
       ],
     ] as const) {
       const response = await client.callTool({ name, arguments: args });

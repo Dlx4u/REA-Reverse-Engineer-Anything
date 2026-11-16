@@ -7,6 +7,7 @@ import { createToolResultDelivery } from "../../../src/server/toolResult.js";
 import { toolContract } from "../../../src/contracts/toolContracts.js";
 import { silentLogger } from "../../../src/logger.js";
 import { createInjectedProcess } from "../providers/RizinDebugSessionCoverage.fixtures.js";
+import { absoluteCallerPath } from "../../../src/filesystem/callerPath.js";
 import {
   createRizinTestManager,
   rizinTestInferiorTty,
@@ -61,7 +62,7 @@ const observe = async (
     const startReply = await client.callTool({
       name: "start_rizin_debug_session",
       arguments: {
-        path: "fixture.bin",
+        path: absoluteCallerPath("fixture.bin"),
         inferior_tty: await rizinTestInferiorTty(),
       },
     });

@@ -11,6 +11,7 @@ import { createToolResultDelivery } from "../../../src/server/toolResult.js";
 import { parseMcpToolError } from "../../fixtures/mcpToolError.js";
 import { validateDebuggerStatusResponse } from "../../support/reverseDebuggerMcpTestHelpers.js";
 import { createInjectedProcess } from "../providers/RizinDebugSessionCoverage.fixtures.js";
+import { absoluteCallerPath } from "../../../src/filesystem/callerPath.js";
 import {
   createRizinTestManager,
   rizinTestInferiorTty,
@@ -88,7 +89,7 @@ test.each([
       ).outputSchema.parse(
         (
           await call("start_rizin_debug_session", {
-            path: "fixture.bin",
+            path: absoluteCallerPath("fixture.bin"),
             inferior_tty: await rizinTestInferiorTty(),
           })
         ).structuredContent,
