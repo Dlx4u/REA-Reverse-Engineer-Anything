@@ -196,6 +196,7 @@ export const createServer = (
     electronFuses,
     releaseExposure,
     pythonPyc,
+    mavenGradleMetadata,
     webNetworkCapture,
     javascriptRecovery,
     artifactResources,
@@ -439,6 +440,7 @@ export const createServer = (
           sqliteDatabase,
           packetCapture,
           signalRecording,
+          mavenGradleMetadata,
         },
         contractTools,
       );
