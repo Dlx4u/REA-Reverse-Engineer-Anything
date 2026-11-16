@@ -10,6 +10,7 @@ import { nesContainerFormat, parseInesLayout } from "./inesContainer.js";
 import { hasUImageMagic } from "./uimageFormat.js";
 import { hasUnityFsHeader } from "./unityfsFormat.js";
 import { hasMftFileRecordHeader } from "./windows/ntfsMft.js";
+import { hasSystemdJournalHeader } from "./linux/systemdJournal.js";
 import { hasWxapkgEncryptedMagic, hasWxapkgHeader } from "./wxapkgFormat.js";
 import { hasZipSignature } from "./zipPackageFormat.js";
 
@@ -30,6 +31,7 @@ export type RecognizedArtifactFormat = Extract<
   | "esp-image"
   | "fit"
   | "ntfs-mft"
+  | "systemd-journal"
   | "plist"
 >;
 
@@ -132,6 +134,7 @@ export const ARTIFACT_FORMAT_RECOGNIZERS: readonly ArtifactFormatRecognizer[] =
     },
     when("fit", hasFitImagesNode),
     when("ntfs-mft", hasMftFileRecordHeader),
+    when("systemd-journal", hasSystemdJournalHeader),
     // Binary plists, including keyed archives, often use other extensions.
     when("plist", hasBinaryPlistSignature),
   ];
