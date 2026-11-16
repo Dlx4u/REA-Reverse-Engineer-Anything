@@ -202,6 +202,7 @@ export const createServer = (
     reverseEngineering,
     firmwareAnalysis,
     gdbSessions,
+    lldbSessions,
     rizinDebugSessions,
     android,
     pcap,
@@ -381,6 +382,7 @@ export const createServer = (
           cutter: { service: cutter, session },
           gdb: { manager: gdbSessions, session },
           rizinDebug: { manager: rizinDebugSessions, session },
+          lldb: { manager: lldbSessions, session },
         },
         { logger: toolLogger, recordEvidence, evidenceById },
       );
