@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+import { decimalTokenPattern } from "./decimalTokenPattern.js";
+import { declaredTokenPattern } from "../domain/schemaConstraints.js";
+
 import type { ExecutableFormatHint } from "../domain/dosCom.js";
 import type { BinaryArchitecture } from "../domain/binaryTargetTypes.js";
 import type { AnalysisProviderSelector } from "../domain/providerSelection.js";
@@ -18,9 +21,10 @@ type DecimalWrapper =
     };
 
 const decimalToken = (domain: z.ZodNumber) =>
-  z
-    .string()
-    .regex(DECIMAL_INTEGER_TOKEN, "Expected a decimal integer")
+  declaredTokenPattern(
+    z.string().regex(DECIMAL_INTEGER_TOKEN, "Expected a decimal integer"),
+    new RegExp(decimalTokenPattern(domain), "u"),
+  )
     .pipe(z.coerce.number<string>())
     .pipe(domain);
 
