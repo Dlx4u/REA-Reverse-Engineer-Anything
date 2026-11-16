@@ -196,6 +196,7 @@ export const createServer = (
     electronFuses,
     releaseExposure,
     pythonPyc,
+    dwarfUnits,
     webNetworkCapture,
     javascriptRecovery,
     artifactResources,
@@ -405,6 +406,7 @@ export const createServer = (
           peImports,
           windowsShortcut,
           recordedCrash,
+          dwarfUnits,
         },
         contractTools,
       );

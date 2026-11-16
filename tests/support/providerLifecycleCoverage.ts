@@ -1271,6 +1271,19 @@ export const PROVIDER_LIFECYCLE_COVERAGE: Readonly<
       ),
     ),
   ),
+  "rea-dwarf-units": inProcess(
+    covered(
+      test(
+        "tests/acceptance/dwarfUnitsCli.test.ts",
+        "reports a compile unit through the public CLI",
+      ),
+      test(
+        "tests/boundary/mcp/dwarfUnitsMcp.test.ts",
+        "advertises inspect_dwarf_units and reads a compile unit",
+      ),
+    ),
+    typedFailures("tests/boundary/filesystem/dwarfUnits.test.ts"),
+  ),
   "rea-elf-notes": inProcess(
     covered(
       test(
