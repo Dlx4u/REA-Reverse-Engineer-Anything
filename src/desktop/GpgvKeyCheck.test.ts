@@ -13,7 +13,7 @@ import {
 } from "openpgp";
 
 import { createTestTempDirectory } from "../../tests/fixtures/temporaryDirectory.js";
-import { ArtifactReaderFailure } from "../artifacts/ArtifactReader.js";
+import { ArtifactReaderFailure } from "../resources/ArtifactReader.js";
 import {
   A_ARMORED,
   SIGNED_BY_BOTH,
