@@ -2785,3 +2785,99 @@ describe("Objective-C adopted protocol-list count limit", () => {
     },
   );
 });
+
+describe("Objective-C category class properties", () => {
+  /** A fully decoded category beside an image info; `_classProperties` is at 0xb70. */
+  const categoryImage = (flags: number, classProperties: number): Buffer => {
+    const bytes = fixture(false, "partial-method");
+    bytes.writeBigUInt64LE(base + 0x700n, 0xb98);
+    bytes.writeUInt32LE(312, 20);
+    bytes.writeUInt32LE(312, 36);
+    bytes.writeUInt32LE(3, 96);
+    bytes.write("__objc_imageinfo", 264);
+    bytes.write("__DATA", 280);
+    bytes.writeBigUInt64LE(base + 0xc00n, 296);
+    bytes.writeBigUInt64LE(8n, 304);
+    bytes.writeUInt32LE(0xc00, 312);
+    bytes.writeUInt32LE(flags, 0xc04);
+    if (classProperties !== 0)
+      bytes.writeBigUInt64LE(base + BigInt(classProperties), 0xb70);
+    return bytes;
+  };
+  const categoryFacts = (bytes: Buffer) => {
+    const result = decodeAppleDispatchMetadata(bytes, 100, provenance);
+    return {
+      decode: result.objc_categories.map(({ decode }) => decode),
+      coverage: result.coverage.find(
+        ({ facet }) => facet === "objc_properties_categories",
+      ),
+    };
+  };
+
+  it("marks a category partial when its declared class property list is not decoded", () => {
+    const { decode, coverage } = categoryFacts(categoryImage(0x40, 0x600));
+    expect(decode).toEqual([
+      { status: "partial", reason: "category_class_properties_not_decoded" },
+    ]);
+    expect(coverage).toMatchObject({
+      status: "partial",
+      reason:
+        "category_class_properties_not_decoded at 0x100000b70: Category FixtureCategory class property list is not decoded",
+      examined: 1,
+      decoded: 0,
+    });
+  });
+
+  it.each([
+    ["has no class property list", 0x40, 0],
+    ["does not declare the field", 0, 0x600],
+  ])("keeps a category decoded when the image %s", (_, flags, list) => {
+    const { decode, coverage } = categoryFacts(categoryImage(flags, list));
+    expect(decode).toEqual([{ status: "decoded", reason: null }]);
+    expect(coverage).toMatchObject({ status: "complete", decoded: 1 });
+  });
+
+  it.each([
+    [
+      "class property field is unmapped",
+      (bytes: Buffer) => {
+        // End the record at the segment boundary, so its last field lies past it.
+        bytes.copy(bytes, 0xfd0, 0xb40, 0xb70);
+        bytes.writeBigUInt64LE(base + 0xfd0n, 0xb00);
+      },
+      "0x100001000",
+    ],
+    [
+      "image info is unmapped",
+      (bytes: Buffer) => bytes.writeBigUInt64LE(base + 0x2000n, 296),
+      "0x100002004",
+    ],
+  ])("retains a category whose %s", (_, damage, field) => {
+    const bytes = categoryImage(0x40, 0);
+    damage(bytes);
+    const result = decodeAppleDispatchMetadata(bytes, 100, provenance);
+    expect(result.objc_categories).toMatchObject([
+      {
+        name: "FixtureCategory",
+        class_name: "Fixture",
+        instance_methods: [expect.any(String)],
+        decode: {
+          status: "partial",
+          reason: "category_class_properties_unreadable",
+        },
+      },
+    ]);
+    expect(
+      result.coverage.find(
+        ({ facet }) => facet === "objc_properties_categories",
+      ),
+    ).toMatchObject({
+      status: "partial",
+      reason: expect.stringContaining(
+        `category_class_properties_unreadable at ${field}: Category FixtureCategory class property list: `,
+      ),
+      examined: 1,
+      decoded: 0,
+    });
+  });
+});

@@ -39,9 +39,57 @@ const unnamedClassReference = (
     : `Category ${category} class reference is bound to ${bound.symbol}, which is not read as an Objective-C class name`;
 };
 
+/** `objc_image_info` flag: this image's `category_t` records end in `_classProperties`. */
+const HAS_CATEGORY_CLASS_PROPERTIES = 1 << 6;
+
+/**
+ * Why a category's `_classProperties` list is unaccounted for, or null when
+ * the record has none. Images built before the field existed end at
+ * `instanceProperties`, so the bytes after it are a field only when an image
+ * info declares them; same-named image infos are read together. A field that
+ * cannot be read is reported at its address so the category keeps the facts
+ * already decoded.
+ */
+const categoryClassPropertyIssue = (
+  read: Pick<ObjcDispatchReaders, "u32" | "pointer">,
+  imageInfoFlags: readonly bigint[],
+  category: bigint,
+  name: string,
+): DecodeIssue | null => {
+  let field = category + 48n;
+  try {
+    let declared = false;
+    for (const flags of imageInfoFlags) {
+      field = flags;
+      if ((read.u32(flags) & HAS_CATEGORY_CLASS_PROPERTIES) !== 0)
+        declared = true;
+    }
+    if (!declared) return null;
+    field = category + 48n;
+    return read.pointer(field) === 0n
+      ? null
+      : issue(
+          "objc_properties_categories",
+          "category_class_properties_not_decoded",
+          `Category ${name} class property list is not decoded`,
+          `0x${field.toString(16)}`,
+        );
+  } catch (cause: unknown) {
+    if (expectedAppleMetadataReadFailure(cause) === null) throw cause;
+    return issue(
+      "objc_properties_categories",
+      "category_class_properties_unreadable",
+      `Category ${name} class property list: ${errorMessage(cause)}`,
+      `0x${field.toString(16)}`,
+    );
+  }
+};
+
 /**
  * Decode `__objc_catlist` `category_t` records:
  * name, cls, instanceMethods, classMethods, protocols, instanceProperties.
+ * A declared `_classProperties` list is reported, not decoded: the public
+ * property shape has no class/instance discriminator.
  */
 export const decodeObjcCategories = (input: {
   readonly sections: readonly Section[];
@@ -67,6 +115,9 @@ export const decodeObjcCategories = (input: {
 }): number => {
   const { read, result } = input;
   let examined = 0;
+  const imageInfoFlags = input.sections
+    .filter(({ name, size }) => name === "__objc_imageinfo" && size >= 8)
+    .map(({ address }) => address + 4n);
   for (const section of input.sections.filter(
     ({ name }) => name === "__objc_catlist",
   )) {
@@ -150,9 +201,17 @@ export const decodeObjcCategories = (input: {
           issues: input.issues,
           onTruncated,
         });
+        const classProperties = categoryClassPropertyIssue(
+          read,
+          imageInfoFlags,
+          category,
+          name,
+        );
+        if (classProperties !== null) input.issues.push(classProperties);
         const decodeReasons = [
           ...(className === null ? ["category_class_unresolved"] : []),
           ...(protocols.ok ? [] : ["protocol_list_unreadable"]),
+          ...(classProperties === null ? [] : [classProperties.code]),
           ...(budgetTruncated ? ["max_records_reached"] : []),
         ];
         result.objc_categories.push({
