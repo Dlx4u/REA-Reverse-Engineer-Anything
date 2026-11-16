@@ -200,6 +200,11 @@ export const analysisErrorRemediationAction = (
     return "Correct the reported load argument (--target-format, --architecture, or --entry-point on the CLI; format, architecture, or entry_point through MCP) and retry.";
   if (
     error instanceof BinaryTargetError &&
+    error.constraint === "debug_companion_rejected"
+  )
+    return "Correct dsym_path so it names a .dSYM bundle whose DWARF member carries the target image's LC_UUID, or omit dsym_path to analyze without debug types.";
+  if (
+    error instanceof BinaryTargetError &&
     error.constraint === "file_format_rejected"
   )
     return "Review the reported file-format reason and select a supported, well-formed target.";

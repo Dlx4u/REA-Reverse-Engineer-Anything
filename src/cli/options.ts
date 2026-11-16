@@ -159,6 +159,8 @@ const NATIVE_OPEN_HELP = {
     "Caller-supplied CPU family; required with --target-format raw-binary, must be omitted with gamecube-dol",
   entryPoint:
     "Caller-supplied load and entry address (0xhex); required with --target-format raw-binary, optional with gamecube-dol (must equal the DOL header entry)",
+  dsymPath:
+    "Absolute path to a .dSYM bundle whose DWARF member carries the Mach-O target's LC_UUID; omission analyzes without debug types",
   provider:
     "Bind deep analysis to a provider ID or use deterministic auto selection",
   snapshot: "Load and update a local analysis snapshot",
@@ -198,6 +200,10 @@ export const nativeTarget = (
         name: "entry-point",
         description: NATIVE_OPEN_HELP.entryPoint,
       },
+      dsym_path: {
+        name: "dsym-path",
+        description: NATIVE_OPEN_HELP.dsymPath,
+      },
       provider_id: { name: "provider", description: NATIVE_OPEN_HELP.provider },
     },
   },
@@ -210,6 +216,7 @@ export interface NativeOpenCliFlags {
   readonly "target-format"?: ExecutableFormatHint | undefined;
   readonly architecture?: BinaryArchitecture | undefined;
   readonly "entry-point"?: string | undefined;
+  readonly "dsym-path"?: string | undefined;
 }
 
 /** Map native CLI flags onto the shared one-shot analysis options. */
@@ -228,5 +235,8 @@ export const directAnalysisOptionsFromCli = (
   ...(options["entry-point"] === undefined
     ? {}
     : { entryPoint: options["entry-point"] }),
+  ...(options["dsym-path"] === undefined
+    ? {}
+    : { dsymPath: options["dsym-path"] }),
   ...(options.provider === undefined ? {} : { providerId: options.provider }),
 });
