@@ -26,6 +26,7 @@ import {
   type CliResultOutput,
 } from "./cliResultOutput.js";
 import { completionHelpNote, createCliCompletions } from "./completions.js";
+import { recordHelpOutput } from "./outputFormatHelp.js";
 import { excludeDeclaredSensitiveArguments } from "./explicitSensitiveArguments.js";
 import {
   CLI_CUSTOM_GLOBAL_OPTIONS,
@@ -176,7 +177,8 @@ export const createCliShell = (options: CliShellOptions): CliInstance => {
       serveOptions ?? {},
     );
     if (registration !== undefined) return registration;
-    const result = serveStrict(global, serveOptions ?? {}, (selected) =>
+    const help = recordHelpOutput(global.arguments, serveOptions ?? {});
+    const result = serveStrict(global, help.options, (selected) =>
       serveDeclared(global, selected, (declaredOptions) =>
         reportUnknownMcpSubcommand(cli.name, global, declaredOptions)
           ? Promise.resolve()
@@ -187,8 +189,9 @@ export const createCliShell = (options: CliShellOptions): CliInstance => {
       ),
     );
     const note = completionHelpNote(global);
-    if (note === undefined) return result;
-    return result.then(() => {
+    const completed = help.finish(result);
+    if (note === undefined) return completed;
+    return completed.then(() => {
       const write =
         serveOptions?.stdout ?? ((text: string) => process.stdout.write(text));
       write(`\n${note}`);
