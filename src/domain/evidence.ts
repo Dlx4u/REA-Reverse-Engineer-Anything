@@ -608,7 +608,13 @@ export const evidenceEnvelopeForAdmission = (
     raw_result: observation.rawResult ?? null,
     normalized_result: observation.result,
     confidence: observation.confidence ?? "observed",
-    authority: observation.authority ?? "shipped-artifact",
+    // Only a subject that names an identified target can support shipment
+    // authority; an unknown target names no artifact and claims none.
+    authority:
+      observation.authority ??
+      (subject.identity.kind === "unknown"
+        ? "analyst-inference"
+        : "shipped-artifact"),
     environment: observation.environment ?? null,
     limitations: observation.limitations ?? [],
     ...(observation.relationshipCoverage === undefined
