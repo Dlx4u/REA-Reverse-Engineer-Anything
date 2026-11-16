@@ -324,6 +324,7 @@ export type BinaryTarget =
           | "uf2"
           | "dfuse"
           | "fit"
+          | "compound-file"
           | "ntfs-mft";
       })
   | (BinaryTargetIdentity &
@@ -380,6 +381,7 @@ export const BINARY_TARGET_FORMAT_KINDS = {
   dfuse: "archive",
   "esp-flash-image": "archive",
   fit: "archive",
+  "compound-file": "archive",
   "ntfs-mft": "archive",
   plist: "artifact",
   javascript: "artifact",

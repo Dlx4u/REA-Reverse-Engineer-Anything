@@ -80,6 +80,7 @@ export const liveBinaryTargetSummaryVariants = [
       "uf2",
       "dfuse",
       "fit",
+      "compound-file",
       "ntfs-mft",
     ]),
     architecture: z.null(),
