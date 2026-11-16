@@ -1,3 +1,5 @@
+import { registerRawRasterDiscoveryTool } from "./registerRawRasterDiscoveryTool.js";
+import { registerStructuredRasterDiscoveryTool } from "./registerStructuredRasterDiscoveryTool.js";
 import {
   createCapabilityServices,
   type CapabilityServiceOptions,
@@ -21,7 +23,11 @@ import { promptsForToolFamilies } from "../contracts/promptToolFamilyScope.js";
 import { retainedDebuggerDiagnostics } from "../process/ownedDebuggerCleanupError.js";
 import { snapshotEnvironment } from "../process/snapshotEnvironment.js";
 import { captureProviderEnvironment } from "./providerEnvironment.js";
-import { createByteEntropyService } from "../composition/binaryDiagnostics.js";
+import {
+  createByteEntropyService,
+  createRawRasterDiscoveryService,
+  createStructuredRasterDiscoveryService,
+} from "../composition/binaryDiagnostics.js";
 import { FridaInstrumentationService } from "../application/frida/FridaInstrumentationService.js";
 import { EvidenceMcpServer } from "./EvidenceMcpServer.js";
 import { catalogIdentityForToolFamilies } from "../contracts/catalog/catalogIdentity.js";
@@ -383,6 +389,20 @@ export const createServer = (
           rizinDebug: { manager: rizinDebugSessions, session },
         },
         { logger: toolLogger, recordEvidence, evidenceById },
+      );
+      registerStructuredRasterDiscoveryTool(
+        server,
+        createStructuredRasterDiscoveryService(artifactResources),
+        toolLogger,
+        recordEvidence,
+        analysisAdmission,
+      );
+      registerRawRasterDiscoveryTool(
+        server,
+        createRawRasterDiscoveryService(artifactResources),
+        toolLogger,
+        recordEvidence,
+        analysisAdmission,
       );
       registerServiceTools(
         server,
